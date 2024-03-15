@@ -2,19 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
-use Illuminate\Support\Facades\Storage; // Import the Storage facade
+use App\Services\UserService;
+use App\Http\Requests\CreateUserRequest;
+use App\Http\Requests\UpdateUserRequest;
+
 
 class UsersController extends Controller
 {
+    protected $userService;
+
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
+
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $users = User::all();
+        $users = $this->userService->index();
         return view('users.index', compact('users'));
     }
 
@@ -29,25 +37,9 @@ class UsersController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateUserRequest $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'password' => 'required|min:6',
-        ]);
-
-        $imageName = time() . '.' . $request->image->extension();
-        $request->image->move(public_path('images'), $imageName);
-
-        $user = new User();
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->image = $imageName;
-        $user->password = bcrypt($request->password);
-        $user->save();
-
+        $this->userService->create($request->validated());
         return redirect()->route('users.index')->with('success', 'User created successfully.');
     }
 
@@ -56,7 +48,7 @@ class UsersController extends Controller
      */
     public function show(string $id)
     {
-        $user = User::findOrFail($id);
+        $user = $this->userService->show($id);
         return view('users.show', compact('user'));
     }
 
@@ -65,43 +57,16 @@ class UsersController extends Controller
      */
     public function edit(string $id)
     {
-        $user = User::findOrFail($id);
+        $user = $this->userService->show($id);
         return view('users.edit', compact('user'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateUserRequest  $request, string $id)
     {
-        $user = User::findOrFail($id);
-
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users,email,' . $id,
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'password' => 'nullable|min:6',
-        ]);
-
-        if ($request->hasFile('image')) {
-            // Check if the user has an existing image
-            if ($user->image) {
-                // Delete the existing image file
-                Storage::delete($user->image);
-            }
-
-            $imageName = time() . '.' . $request->image->extension();
-            $request->image->move(public_path('images'), $imageName);
-            $user->image = $imageName;
-        }
-
-        $user->name = $request->name;
-        $user->email = $request->email;
-        if ($request->filled('password')) {
-            $user->password = bcrypt($request->password);
-        }
-        $user->save();
-
+        $this->userService->update($request, $id);
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
 
@@ -110,9 +75,7 @@ class UsersController extends Controller
      */
     public function destroy(string $id)
     {
-        $user = User::findOrFail($id);
-        Storage::delete($user->image);
-        $user->delete();
+        $this->userService->delete($id);
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }
 }
