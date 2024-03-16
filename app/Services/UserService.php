@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\UserActionEvent;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -25,6 +26,8 @@ class UserService implements UserServiceInterface
         $user->image = $imageName;
         $user->password = bcrypt($data['password']);
         $user->save();
+
+        event(new UserActionEvent($user, 'created'));
 
         return $user;
     }
@@ -54,6 +57,8 @@ class UserService implements UserServiceInterface
             $user->password = bcrypt($request->password);
         }
         $user->save();
+
+        event(new UserActionEvent($user, 'updated'));
 
         return $user;
     }

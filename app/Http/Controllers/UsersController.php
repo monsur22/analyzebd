@@ -5,13 +5,13 @@ namespace App\Http\Controllers;
 use App\Services\UserService;
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
-
+use App\Services\Interfaces\UserServiceInterface;
 
 class UsersController extends Controller
 {
     protected $userService;
 
-    public function __construct(UserService $userService)
+    public function __construct(UserServiceInterface $userService)
     {
         $this->userService = $userService;
     }
@@ -49,7 +49,8 @@ class UsersController extends Controller
     public function show(string $id)
     {
         $user = $this->userService->show($id);
-        return view('users.show', compact('user'));
+        $addresses = $user->addresses;
+        return view('users.show', compact('user','addresses'));
     }
 
     /**
