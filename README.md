@@ -62,7 +62,7 @@ Before you begin, ensure you have the following installed on your system:
 8. **Access the Project:**
    - For test the PHP Unit test
      ```bash
-    php artisan test --filter UserServiceTest
+     php artisan test --filter UserServiceTest
      ```
 
 ## Additional Notes
