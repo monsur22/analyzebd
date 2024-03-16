@@ -59,7 +59,7 @@ Before you begin, ensure you have the following installed on your system:
    - Login using the following credentials:
      - **Email:** admin@admin.com
      - **Password:** 12345678
-8. **Access the Project:**
+8. **Test php unit testing:**
    - For test the PHP Unit test
      ```bash
      php artisan test --filter UserServiceTest
